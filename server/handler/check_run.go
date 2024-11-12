@@ -40,6 +40,9 @@ func (h *CheckRun) Handle(ctx context.Context, eventType, deliveryID string, pay
 	}
 
 	repo := event.GetRepo()
+	owner := repo.GetOwner().GetLogin()
+	repoName := repo.GetName()
+
 	installationID := githubapp.GetInstallationIDFromEvent(&event)
 
 	ctx, logger := githubapp.PrepareRepoContext(ctx, installationID, repo)
@@ -56,8 +59,16 @@ func (h *CheckRun) Handle(ctx context.Context, eventType, deliveryID string, pay
 
 	prs := event.GetCheckRun().PullRequests
 	if len(prs) == 0 {
-		logger.Debug().Msg("Doing nothing since status change event affects no open pull requests")
-		return nil
+		logger.Debug().Msg("No pull requests associated with the check run, searching by SHA")
+		// check runs on fork PRs do not have the PRs attached to the event so we need to filter all PRs by SHA
+		prs, err = pull.ListAllOpenPullRequestsFilteredBySHA(ctx, client.PullRequests, owner, repoName, event.GetCheckRun().GetHeadSHA())
+		if err != nil {
+			return errors.Wrap(err, "failed to determine open pull requests matching the status context change")
+		}
+		if len(prs) == 0 {
+			logger.Debug().Msg("No open pull requests found for the given SHA")
+			return nil
+		}
 	}
 
 	for _, pr := range prs {
