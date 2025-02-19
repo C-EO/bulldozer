@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/pkg/errors"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
@@ -185,7 +185,7 @@ func (d *eventDispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info().Msgf("Received webhook event")
+	logger.Debug().Msgf("Received webhook event")
 
 	handler, ok := d.handlerMap[eventType]
 	if ok {

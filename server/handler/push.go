@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/palantir/bulldozer/pull"
 	"github.com/palantir/go-githubapp/githubapp"
 	"github.com/pkg/errors"
@@ -66,7 +66,7 @@ func (h *Push) Handle(ctx context.Context, eventType, deliveryID string, payload
 		return errors.Wrap(err, "failed to instantiate github client")
 	}
 
-	prs, err := pull.ListOpenPullRequestsForRef(ctx, client, owner, repoName, baseRef)
+	prs, err := pull.GetAllOpenPullRequestsForRef(ctx, client.PullRequests, owner, repoName, baseRef)
 	if err != nil {
 		return errors.Wrap(err, "failed to determine open pull requests matching the push change")
 	}
